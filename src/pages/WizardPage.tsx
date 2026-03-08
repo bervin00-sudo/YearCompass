@@ -1,11 +1,10 @@
-import { useEffect, useRef } from 'react';
+import { type FC, useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useYearCompassStore } from '../store/yearCompassStore';
 import { useAutoSave } from '../hooks/useAutoSave';
 import { getTelegramWebApp } from '../hooks/useTelegram';
 import { SECTIONS, TOTAL_SECTIONS } from '../constants/sections';
 import { ProgressBar } from '../components/layout/ProgressBar';
-import { SectionHeader } from '../components/layout/SectionHeader';
 
 // Part 1
 import { CalendarReview } from '../components/sections/part1/CalendarReview';
@@ -25,7 +24,7 @@ import { SixSentences } from '../components/sections/part2/SixSentences';
 import { WordForYear } from '../components/sections/part2/WordForYear';
 import { SecretWish } from '../components/sections/part2/SecretWish';
 
-const SECTION_COMPONENTS: Record<string, React.FC> = {
+const SECTION_COMPONENTS: Record<string, FC> = {
   calendarReview: CalendarReview,
   lifeAreasAssessment: LifeAreasAssessment,
   sixReflectionPrompts: SixReflectionPrompts,

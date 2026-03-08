@@ -1,6 +1,8 @@
 import { openDB, type IDBPDatabase } from 'idb';
 import type { YearCompassData, Photo } from '../types/yearCompass';
 
+export type StoredPhoto = Photo & { year: number };
+
 const DB_NAME = 'yearcompass-db';
 const DB_VERSION = 1;
 
@@ -40,7 +42,7 @@ export async function getAllYears(): Promise<number[]> {
   return all.map((d: YearCompassData) => d.year).sort((a, b) => b - a);
 }
 
-export async function savePhoto(photo: Photo & { year: number }): Promise<void> {
+export async function savePhoto(photo: StoredPhoto): Promise<void> {
   const db = await getDB();
   await db.put('photos', photo);
 }
