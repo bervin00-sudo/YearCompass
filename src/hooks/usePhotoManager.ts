@@ -35,8 +35,10 @@ export function usePhotoManager(sectionId: string) {
   const updateCaptionInStore = useYearCompassStore(s => s.updatePhotoCaption);
   const updateBestMoments = useYearCompassStore(s => s.updateBestMoments);
   const updateDareToDream = useYearCompassStore(s => s.updateDareToDream);
+  const updateMonthPhotoIds = useYearCompassStore(s => s.updateMonthPhotoIds);
   const bestMomentsPhotoIds = useYearCompassStore(s => s.data.bestMoments.photoIds);
   const dareToDreamPhotoIds = useYearCompassStore(s => s.data.dareToDream.photoIds);
+  const monthNotes = useYearCompassStore(s => s.data.calendarReview.monthNotes);
 
   const inputRef = useRef<HTMLInputElement | null>(null);
   const onFileCallback = useRef<((file: File) => void) | null>(null);
@@ -79,6 +81,12 @@ export function usePhotoManager(sectionId: string) {
           updateBestMoments({ photoIds: [...bestMomentsPhotoIds, photo.id] });
         } else if (sectionId === 'dareToDream') {
           updateDareToDream({ photoIds: [...dareToDreamPhotoIds, photo.id] });
+        } else if (sectionId.startsWith('month-')) {
+          const month = parseInt(sectionId.replace('month-', ''), 10);
+          const mn = monthNotes.find(m => m.month === month);
+          if (mn) {
+            updateMonthPhotoIds(month, [...mn.photoIds, photo.id]);
+          }
         }
       } catch (err) {
         console.error('Failed to add photo:', err);

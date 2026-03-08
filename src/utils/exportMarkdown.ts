@@ -60,9 +60,15 @@ export function buildMarkdownString(
   const monthNames = ['Январь','Февраль','Март','Апрель','Май','Июнь',
     'Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
   data.calendarReview.monthNotes.forEach(mn => {
+    const monthPhotos = photos.filter(p => mn.photoIds.includes(p.id));
+    if (!mn.note.trim() && !monthPhotos.length) return;
+    lines.push(`> [!note] ${monthNames[mn.month]}`);
     if (mn.note.trim()) {
-      lines.push(`> [!note] ${monthNames[mn.month]}`);
       lines.push(`> ${mn.note.replace(/\n/g, '\n> ')}`);
+    }
+    lines.push('');
+    if (monthPhotos.length) {
+      lines.push(photoBlock(monthPhotos, filenames, mode));
       lines.push('');
     }
   });

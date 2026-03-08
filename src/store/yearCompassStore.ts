@@ -34,6 +34,7 @@ interface YearCompassStore {
 
   // Part 1 updates
   updateMonthNote: (month: number, note: string) => void;
+  updateMonthPhotoIds: (month: number, photoIds: string[]) => void;
   updateCalendarOverallNote: (note: string) => void;
   updateLifeAreaRating: (area: LifeAreaKey, rating: number, note: string) => void;
   updateSixReflectionPrompts: (patch: Partial<SixReflectionPromptsData>) => void;
@@ -100,6 +101,13 @@ export const useYearCompassStore = create<YearCompassStore>()(
     updateMonthNote: (month, note) => set((s) => {
       const entry = s.data.calendarReview.monthNotes.find(m => m.month === month);
       if (entry) entry.note = note;
+      s.data.updatedAt = Date.now();
+      s.hasUnsavedChanges = true;
+    }),
+
+    updateMonthPhotoIds: (month, photoIds) => set((s) => {
+      const entry = s.data.calendarReview.monthNotes.find(m => m.month === month);
+      if (entry) entry.photoIds = photoIds;
       s.data.updatedAt = Date.now();
       s.hasUnsavedChanges = true;
     }),
@@ -222,6 +230,9 @@ export const useYearCompassStore = create<YearCompassStore>()(
       // Remove from section photoIds
       s.data.bestMoments.photoIds = s.data.bestMoments.photoIds.filter(id => id !== photoId);
       s.data.dareToDream.photoIds = s.data.dareToDream.photoIds.filter(id => id !== photoId);
+      s.data.calendarReview.monthNotes.forEach(mn => {
+        mn.photoIds = mn.photoIds.filter(id => id !== photoId);
+      });
       s.hasUnsavedChanges = true;
     }),
 

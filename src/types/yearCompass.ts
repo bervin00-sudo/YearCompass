@@ -21,6 +21,7 @@ export interface Photo {
 export interface MonthNote {
   month: number; // 0–11
   note: string;
+  photoIds: string[];
 }
 
 export interface CalendarReviewData {

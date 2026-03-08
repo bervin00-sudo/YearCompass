@@ -10,7 +10,7 @@ export function createInitialData(year: number): YearCompassData {
     updatedAt: now,
 
     calendarReview: {
-      monthNotes: Array.from({ length: 12 }, (_, i) => ({ month: i, note: '' })),
+      monthNotes: Array.from({ length: 12 }, (_, i) => ({ month: i, note: '', photoIds: [] })),
       overallNote: '',
     },
 
