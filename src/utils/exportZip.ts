@@ -38,16 +38,41 @@ export function exportMarkdownSingleFile(data: YearCompassData, photos: Photo[])
   return new Blob([markdown], { type: 'text/markdown;charset=utf-8' });
 }
 
+export function getMarkdownText(data: YearCompassData, photos: Photo[]): string {
+  return buildMarkdownString(data, photos, {}, 'base64');
+}
+
 export function downloadBlob(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob);
+  // Use target="_blank" to avoid navigating away from Telegram WebApp
   const a = document.createElement('a');
   a.href = url;
   a.download = filename;
+  a.target = '_blank';
+  a.rel = 'noopener noreferrer';
   a.style.display = 'none';
   document.body.appendChild(a);
   a.click();
   setTimeout(() => {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-  }, 100);
+  }, 1000);
+}
+
+export async function copyToClipboard(text: string): Promise<boolean> {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    // Fallback for older WebViews
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    const ok = document.execCommand('copy');
+    document.body.removeChild(textarea);
+    return ok;
+  }
 }

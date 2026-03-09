@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useYearCompassStore } from '../store/yearCompassStore';
-import { exportZip, exportMarkdownSingleFile, downloadBlob } from '../utils/exportZip';
+import { exportZip, exportMarkdownSingleFile, downloadBlob, getMarkdownText, copyToClipboard } from '../utils/exportZip';
 import { generateCollage } from '../utils/exportCollage';
 import { getTelegramWebApp } from '../hooks/useTelegram';
 
@@ -21,6 +21,7 @@ export function ExportPage() {
   const [status, setStatus] = useState<ExportState>({ zip: 'idle', md: 'idle', collage: 'idle' });
   const [collagePreview, setCollagePreview] = useState<string | null>(null);
   const [showReset, setShowReset] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const year = data.year;
   const allPhotos = photos;
@@ -28,14 +29,15 @@ export function ExportPage() {
 
   // Hide MainButton, set up BackButton
   useEffect(() => {
-    tg.MainButton.hide();
+    const _tg = getTelegramWebApp();
+    _tg.MainButton.hide();
     const onBack = () => setPage('wizard');
-    tg.BackButton.onClick(onBack);
-    tg.BackButton.show();
+    _tg.BackButton.onClick(onBack);
+    _tg.BackButton.show();
     return () => {
-      tg.BackButton.offClick(onBack);
+      _tg.BackButton.offClick(onBack);
     };
-  }, [setPage, tg]);
+  }, [setPage]);
 
   async function handleZipExport() {
     setStatus(s => ({ ...s, zip: 'loading' }));
@@ -63,9 +65,19 @@ export function ExportPage() {
     }
   }
 
+  async function handleCopyMarkdown() {
+    const text = getMarkdownText(data, allPhotos);
+    const ok = await copyToClipboard(text);
+    if (ok) {
+      setCopied(true);
+      tg.HapticFeedback.notificationOccurred('success');
+      setTimeout(() => setCopied(false), 3000);
+    }
+  }
+
   async function handleCollageExport() {
     if (!allPhotos.length) {
-      alert('Нет фото для коллажа. Добавь фотографии в разделах "Лучшие моменты" или "Мечтай без ограничений".');
+      alert('Нет фото для коллажа. Добавь фотографии в разделах.');
       return;
     }
     setStatus(s => ({ ...s, collage: 'loading' }));
@@ -143,6 +155,14 @@ export function ExportPage() {
         </p>
       </div>
 
+      {/* Telegram download note */}
+      <div
+        className="rounded-xl px-3 py-2 text-xs leading-relaxed"
+        style={{ background: 'var(--tg-secondary-bg)', color: 'var(--tg-hint)' }}
+      >
+        💡 В Telegram файлы могут не скачиваться напрямую. Используй <strong>«Скопировать текст»</strong> — он сохранит всё в буфер обмена, вставь в Obsidian или заметки.
+      </div>
+
       {/* Export options */}
       <div className="flex flex-col gap-3">
         <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--tg-hint)' }}>
@@ -157,13 +177,23 @@ export function ExportPage() {
           onClick={handleZipExport}
         />
 
-        <ExportButton
-          label="Единый Markdown файл"
-          emoji="📄"
-          description="Один .md файл с встроенными фото (base64)"
-          state={status.md}
-          onClick={handleMdExport}
-        />
+        <div className="flex flex-col gap-2">
+          <ExportButton
+            label="Единый Markdown файл"
+            emoji="📄"
+            description="Один .md файл с встроенными фото (base64)"
+            state={status.md}
+            onClick={handleMdExport}
+          />
+          {/* Copy fallback for Telegram */}
+          <button
+            onClick={handleCopyMarkdown}
+            className="w-full py-2.5 rounded-xl text-sm font-medium"
+            style={{ background: 'var(--tg-secondary-bg)', color: copied ? '#10b981' : 'var(--tg-button)' }}
+          >
+            {copied ? '✅ Скопировано!' : '📋 Скопировать текст в буфер'}
+          </button>
+        </div>
 
         <p className="text-xs font-semibold uppercase tracking-wider mt-2" style={{ color: 'var(--tg-hint)' }}>
           🖼️ Коллаж
