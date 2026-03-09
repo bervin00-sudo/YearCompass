@@ -2,14 +2,22 @@ import { useEffect, useRef } from 'react';
 import { useYearCompassStore } from '../store/yearCompassStore';
 import { saveCompassData } from './useStorage';
 
-const DEBOUNCE_MS = 1500;
+const DEBOUNCE_MS = 500;
 
 export function useAutoSave() {
   const data = useYearCompassStore(s => s.data);
   const hasUnsavedChanges = useYearCompassStore(s => s.hasUnsavedChanges);
+  const currentSectionIndex = useYearCompassStore(s => s.currentSectionIndex);
   const markSaved = useYearCompassStore(s => s.markSaved);
   const setSaving = useYearCompassStore(s => s.setSaving);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Save section index to localStorage whenever it changes
+  useEffect(() => {
+    if (data.year) {
+      localStorage.setItem(`yc-section-${data.year}`, String(currentSectionIndex));
+    }
+  }, [currentSectionIndex, data.year]);
 
   useEffect(() => {
     if (!hasUnsavedChanges) return;

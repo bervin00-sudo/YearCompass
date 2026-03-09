@@ -49,7 +49,6 @@ export function usePhotoManager(sectionId: string) {
       const input = document.createElement('input');
       input.type = 'file';
       input.accept = 'image/*';
-      input.capture = 'environment';
       input.style.display = 'none';
       input.onchange = (e) => {
         const file = (e.target as HTMLInputElement).files?.[0];

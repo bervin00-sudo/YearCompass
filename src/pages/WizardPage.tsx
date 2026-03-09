@@ -1,4 +1,4 @@
-import { type FC, useEffect, useRef } from 'react';
+import { type FC, useCallback, useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useYearCompassStore } from '../store/yearCompassStore';
 import { useAutoSave } from '../hooks/useAutoSave';
@@ -58,6 +58,7 @@ export function WizardPage() {
 
   const directionRef = useRef(1);
   const prevIndexRef = useRef(currentIndex);
+  const mainCallbackRef = useRef<(() => void) | null>(null);
 
   const section = SECTIONS[currentIndex];
   const SectionComponent = SECTION_COMPONENTS[section.id];
@@ -90,17 +91,24 @@ export function WizardPage() {
     }
   }, [isFirst, goPrev]);
 
+  const onMain = useCallback(() => {
+    const tg = getTelegramWebApp();
+    tg.HapticFeedback.impactOccurred('medium');
+    if (isLast) {
+      setPage('export');
+    } else {
+      goNext();
+    }
+  }, [isLast, goNext, setPage]);
+
   useEffect(() => {
     const tg = getTelegramWebApp();
 
-    const onMain = () => {
-      tg.HapticFeedback.impactOccurred('medium');
-      if (isLast) {
-        setPage('export');
-      } else {
-        goNext();
-      }
-    };
+    // Remove previous handler before registering new one
+    if (mainCallbackRef.current) {
+      tg.MainButton.offClick(mainCallbackRef.current);
+    }
+    mainCallbackRef.current = onMain;
 
     tg.MainButton.setText(isLast ? '🎉 К экспорту' : 'Далее →');
     tg.MainButton.onClick(onMain);
@@ -108,8 +116,9 @@ export function WizardPage() {
 
     return () => {
       tg.MainButton.offClick(onMain);
+      mainCallbackRef.current = null;
     };
-  }, [isLast, goNext, setPage]);
+  }, [isLast, onMain]);
 
   // Part transition indicator
   const currentPart = section.part;

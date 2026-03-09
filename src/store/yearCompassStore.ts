@@ -87,12 +87,14 @@ export const useYearCompassStore = create<YearCompassStore>()(
     goNext: () => set((s) => {
       if (s.currentSectionIndex < TOTAL_SECTIONS - 1) {
         s.currentSectionIndex += 1;
+        s.hasUnsavedChanges = true;
       }
     }),
 
     goPrev: () => set((s) => {
       if (s.currentSectionIndex > 0) {
         s.currentSectionIndex -= 1;
+        s.hasUnsavedChanges = true;
       }
     }),
 
@@ -248,6 +250,14 @@ export const useYearCompassStore = create<YearCompassStore>()(
       s.data = data;
       s.photos = photos;
       s.hasUnsavedChanges = false;
+      // Restore section progress from localStorage
+      const savedIndex = localStorage.getItem(`yc-section-${data.year}`);
+      if (savedIndex !== null) {
+        const index = parseInt(savedIndex, 10);
+        if (!isNaN(index) && index >= 0 && index < TOTAL_SECTIONS) {
+          s.currentSectionIndex = index;
+        }
+      }
     }),
 
     resetForYear: (year) => set((s) => {

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useYearCompassStore } from '../store/yearCompassStore';
 import { exportZip, exportMarkdownSingleFile, downloadBlob } from '../utils/exportZip';
 import { generateCollage } from '../utils/exportCollage';
@@ -25,6 +25,17 @@ export function ExportPage() {
   const year = data.year;
   const allPhotos = photos;
   const tg = getTelegramWebApp();
+
+  // Hide MainButton, set up BackButton
+  useEffect(() => {
+    tg.MainButton.hide();
+    const onBack = () => setPage('wizard');
+    tg.BackButton.onClick(onBack);
+    tg.BackButton.show();
+    return () => {
+      tg.BackButton.offClick(onBack);
+    };
+  }, [setPage, tg]);
 
   async function handleZipExport() {
     setStatus(s => ({ ...s, zip: 'loading' }));
